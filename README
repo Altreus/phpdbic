@@ -1,0 +1,138 @@
+PHP DBIC
+
+In Perl there is a module called DBIx::Class and it is extremely very good
+and makes dealing with databases somewhat of a doddle.
+
+However, if you are like me and you have found yourself lumbered with a 
+host that doesn't give you shell access so you can't actually install DBIC,
+then you will probably have decided you have to use PHP, since it is the
+only language that actually works there.
+
+This project is the marriage of DBIC's ease with PHP's supportedness, and
+with any luck you should find that writing PHP is only very painful instead
+of prohibitively so.
+
+
+DEPENDENCIES
+
+ PHP5
+ PDO
+
+
+AUTHOR, HOMEPAGE ETC
+
+Altreus 
+http://github.com/altreus
+Bug reports on github please. Contributions welcome
+
+
+LICENCE
+
+This software is licenced under the X11 licence as defined at the URL below
+as "X Consortium".
+
+http://www.xfree86.org/3.3.6/COPYRIGHT2.html#3
+
+
+USAGE
+
+It is quite easy to use. You should put the phpdbic.php file in the include
+directory and require it in your script.
+
+  <?
+  require_once "phpdbic.php";
+
+Then you define a Schema class. I put my reading of the config in here, but
+feel free to simply pass the config into your own constructor. However, it
+is important that you write a constructor because we'll need it later.
+
+  class MySchema extends Schema {
+      public function __construct() {
+          parent::__construct( $config['dsn'], $config['db_user'], $config['db_pass'] );
+      }
+  }
+
+Then define one or more TableDef classes. Each of these classes represents a
+table in your database.
+
+  class MyTable extends TableDef {
+      public function __construct() {
+          $cols = array(
+              "id" => array(
+                  "data_type" => "integer",
+                  "is_pk"     => 1,
+                  "is_ai"     => 1,
+                  "is_nullable" => 0,
+              ),
+              "title" => array(
+                  "data_type" => "varchar",
+                  "size"      => 255,
+                  "is_nullable" => 0,
+              ),
+              "artist" => array(
+                  "data_type" => "varchar",
+                  "size"      => 255,
+                  "is_nullable" => 0,
+              ),
+          );
+          parent::__construct("mytable", $cols);
+      }
+  }
+
+The cols array is an assoc. The keys are the column names and the values are
+more assoc arrays. The keys shown above are pretty much the only ones we care
+about in this version. 'pk' means primary key and 'ai' means auto increment.
+
+Pass the column definitions and the table name into the parent constructor.
+Now, go back to the constructor of your Schema class and add a new line for
+each TableDef class you defined:
+
+  class MySchema extends Schema {
+      public function __construct() {
+          parent::__construct( $config['dsn'], $config['db_user'], $config['db_pass'] );
+          
+          $this->register_resultset( "MyTable" );
+      }
+  }
+
+You must provide the class name that you have created. You can also pass in
+the name of a class that extends ResultSet as the second parameter. If you 
+don't, you are provided with the default ResultSet class. More on that later.
+
+Anyway that's pretty much it.
+
+  $db = new MySchema();
+  $record = $db->resultset("MyTable")->find($id);
+
+The find() and all() methods are the only ones currently defined (give me time)
+and they return, respectively, a single Record object or an array of them.
+
+The Record class is a data model only and does not interact with the database
+except when it is constructed with an ID, whereupon it finds its data. Users
+will not normally create a new Record class themselves.
+
+The methods you should know about on the Record class are get_value, which
+takes the column name, and data(), which takes no parameters and returns the
+Record as an assoc array.
+
+More functionality pending.
+
+As for those ResultSet classes, if you define your own one:
+
+  class MyResultSet extends ResultSet {
+      public function titles_beginning_with_t() {
+      }
+  }
+
+In this example, the method titles_beginning_with_t will be available on the
+ResultSet you get back from the Schema:
+
+  $db = new MySchema();
+  $tbwt = $db->resultset("MyTable")->titles_beginning_with_t();
+
+To do that, you have to pass "MyResultSet" as the second parameter to 
+register_resultset in MySchema's constructor. Otherwise you get the default.
+
+This mimics the behaviour of DBIx::Class's ResultSet, except it doesn't do
+anything yet because I've not done any more than what you see here. However,
+the functionality is there waiting to be implemented so it is a matter of time.
