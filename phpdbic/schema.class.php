@@ -7,7 +7,8 @@ class Schema {
     public function __construct( $dsn, $user = NULL, $pass = NULL, $dopts = NULL ) {
         $class = "PDO";#__DEBUG__ ? "ProfiledPDO" : "PDO";
 
-        $this->db = new $class( $dsn, $user, $pass, $dopts );
+        $this->db = new $class( $dsn, $user, $pass, $dopts ); 
+        $this->db->setAttribute( PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION );
 
         $this->class_register = array();
     }
@@ -31,11 +32,15 @@ class Schema {
     }
 
     public function query( $query, $bind_vars = array(), $return = PDO::FETCH_ASSOC ) {
-        $stmt = $this->db->prepare($query);
-        $stmt->execute( $bind_vars );
-        $results = $stmt->fetchAll( $return );
+        if( ! $stmt = $this->db->prepare($query) ) {
+            throw new Exception("Could not prepare statement");
+        }
 
-        if( count($results) == 1 ) return $results[0];
+        if( ! $stmt->execute( $bind_vars ) ) {
+           throw new Exception($stmt->errorInfo());
+        }
+
+        $results = $stmt->fetchAll( $return );
 
         return $results;
     }
