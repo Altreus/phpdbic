@@ -26,8 +26,17 @@ class TableDef {
         $this->columns[$col_name] = $attrs;
     }
 
+    public function columns() {
+        return array_keys($this->columns);
+    }
+
+    public function column( $col ) {
+        assert( $this->has_column( $col ) );
+        return $this->columns[$col];
+    }
+
     public function has_column( $colname ) {
-        return array_key_exists( $this->columns, $colname );
+        return array_key_exists( $colname, $this->columns );
     }
 
     public function table_name() {
