@@ -34,6 +34,34 @@ function test_fetch_by_id() {
     return true;
 }
 
+function test_fetch_all() {
+    $db = new TestSchema();
+
+    $records = $db->resultset('TestTable')->all();
+
+    if( !is_array($records) ) {
+        return PEAR::raiseError("all() did not return array");
+    } 
+    if( count($records) != 2) {
+        return PEAR::raiseError("find() did not return 2 results: " . count($records) . " found");
+    }
+    if( $records[0]->id != 1 ) {
+        return PEAR::raiseError("find() did not find id=1 in pos [0]: " . $records[0]->id . " found");
+    }
+    if( $records[1]->id != 2 ) {
+        return PEAR::raiseError("find() did not find id=2 in pos [1]: " . $records[1]->id . " found");
+    }
+    if( $records[0]->charfield != "Test Title" ) {
+        return PEAR::raiseError("Record [0] was not correctly constructed");
+    }
+    if( $records[1]->charfield != "Test Title 2" ) {
+        return PEAR::raiseError("Record [1] was not correctly constructed");
+    }
+
+    return true;
+}
+
 Testing::runTests(array(
     "test_fetch_by_id",
+    "test_fetch_all",
 ));
