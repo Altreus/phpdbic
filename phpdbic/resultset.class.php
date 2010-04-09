@@ -36,12 +36,24 @@ class ResultSet {
     }
 
     public function all() {
-        $ids = $this->schema->query($this->query[0], $this->query[1], PDO::FETCH_NUM);
+        $ids = $this->schema->query($this->query[0], $this->query[1] );#PDO::FETCH_NUM);
 
         foreach($ids as $id) {
+            $id = $id['id']; # PDO returns strange things...
             array_push($this->records, new Record($this->schema, $this->td, $id));
         };
 
         return $this->records;
+    }
+
+    public function create( $data ) {
+        $record = new Record( $this->schema, $this->td );
+
+        foreach ($data as $col => $val) {
+            $record->$col = $val;
+        }
+
+        $record->save();
+        return $record;
     }
 }
