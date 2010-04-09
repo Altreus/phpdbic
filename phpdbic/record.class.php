@@ -38,7 +38,9 @@ class Record {
 
         foreach ($this->td->columns() as $col) {
             $coldata = $this->td->column($col);
-            if ($coldata['is_ai']) continue;
+
+            #TODO: implement this.
+            # if ($coldata['is_ai']) continue;
 
             $query_cols[] = "`$col`";
             $query_vals[] = $this->data[$col];
@@ -49,8 +51,19 @@ class Record {
                          $this->td->table_name(), 
                          join(",", $query_cols), 
                          join(",", array_pad(array(), count($query_vals), "?")));
-        $db->query($query, $query_vals);
+        $this->schema->query($query, $query_vals);
 
+    }
+
+    public function delete() {
+        if( array_key_exists('id', $this->data) ) {
+            assert( isset( $this->data['id'] ) );
+            # TODO: pk col stuff.
+            $query = sprintf("DELETE FROM `%s` WHERE `%s` = ?", $this->td->table_name(), 'id');
+
+            $this->schema->query($query, array($this->data['id']));
+            return true;
+        }
     }
 
     public function data() {
