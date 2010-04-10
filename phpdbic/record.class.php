@@ -6,6 +6,7 @@ class Record {
     private $data;
     private $schema;
     private $td;
+    private $loaded = false;
 
     public function __construct( $schema, $td, $id = NULL ) {
         $this->td = $td;
@@ -18,10 +19,14 @@ class Record {
     public function load() {
         # TODO: check for all PKs, not just id, since it may not be called id.
         # also, pk_col will in future return an array in some cases.
+        #
+        # Note: use $this->data directly to avoid recursion based on $this->loaded
         if( !empty($this->data['id']) ){
             $q = sprintf("SELECT * FROM `%s` WHERE `%s` = ?", $this->td->table_name(), $this->td->pk_col());
-            $this->data = $this->schema->query($q, array($this->id), PDO::FETCH_ASSOC);
+            $this->data = $this->schema->query($q, array($this->data['id']), PDO::FETCH_ASSOC);
             $this->data = $this->data[0];
+
+            $this->loaded = true;
         }
     }
 
@@ -56,6 +61,7 @@ class Record {
     }
 
     public function delete() {
+        # TODO: use pk, not 'id'
         if( array_key_exists('id', $this->data) ) {
             assert( isset( $this->data['id'] ) );
             # TODO: pk col stuff.
@@ -67,6 +73,7 @@ class Record {
     }
 
     public function data() {
+        if( ! $this->loaded ) $this->load();
         return array_merge( $this->data );
     }
 
@@ -78,7 +85,7 @@ class Record {
         assert( $this->td->has_column( $prop ) );
 
         # Dude we are so, like, lazy.
-        if( empty($this->data) ) $this->load();
+        if( ! $this->loaded ) $this->load();
         if( ! array_key_exists( $prop, $this->data ) ) $this->load();
 
         return $this->data[$prop];

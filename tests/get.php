@@ -61,7 +61,27 @@ function test_fetch_all() {
     return true;
 }
 
+# Test bug where ->data() did not load()
+function test_get_data() {
+    $db = new TestSchema();
+
+    $records = $db->resultset('TestTable')->all();
+    $rec = $records[0];
+
+    $data = $rec->data();
+
+    if( !is_array($data) ){
+        return PEAR::raiseError("data() did not return array");
+    }
+    if( !array_key_exists('charfield', $data) ) {
+        return PEAR::raiseError("data() did not return any data");
+    }
+
+    return true;
+}
+
 Testing::runTests(array(
     "test_fetch_by_id",
     "test_fetch_all",
+    "test_get_data",
 ));
