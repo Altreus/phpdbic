@@ -33,8 +33,12 @@ class Record {
     public function save() {
         # Check we have the necessary data before proceeding.
         foreach ($this->td->columns() as $col) {
+            # TODO: pk, not id
+            if( $col == "id" ) continue;
             $coldata = $this->td->column($col);
-            assert( $coldata['is_nullable'] || !empty($this->data[$col]) );
+            if(!( $coldata['is_nullable'] || !empty($this->data[$col]) )) {
+                throw new Exception("$col must have value");
+            }
         }
 
         $query = "INSERT INTO `%s` (%s) VALUES (%s)";
@@ -42,6 +46,9 @@ class Record {
         $query_vals = array();
 
         foreach ($this->td->columns() as $col) {
+            # TODO: pk, not id
+            if( $col == "id" ) continue;
+
             $coldata = $this->td->column($col);
 
             #TODO: implement this.
