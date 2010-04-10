@@ -40,9 +40,12 @@ class Schema {
            throw new Exception($stmt->errorInfo());
         }
 
-        $results = $stmt->fetchAll( $return );
+        if( preg_match("/^select/i", $query ) ) {
+            $results = $stmt->fetchAll( $return );
+            return $results;
+        }
 
-        return $results;
+        return true;
     }
 
     public function prepare( $query ) {
