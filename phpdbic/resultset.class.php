@@ -6,6 +6,8 @@ require_once dirname(__FILE__) . "/tabledef.class.php";
 class ResultSet {
     private $records;
     private $schema;
+
+    # array 0 = query string 1 = bind vars
     private $query;
     private $td;
 
@@ -35,6 +37,22 @@ class ResultSet {
         return $this;
     }
 
+    public function search( $search_params ) {
+        $this->query[0] .= " WHERE ";
+        $cond = array();
+
+        foreach ($search_params as $col => $criteria) {
+            $cond[] = " `$col` = ? ";
+
+            # TODO: Criteria is a plural because we need to construct a query with potentially
+            # more than one criterion in it. For now it is just a straight a = b thing.
+            $this->query[1][] = $criteria;
+        }
+
+        $this->query[0] .= join(" AND ", $cond);
+        return $this;
+    }
+
     public function all() {
         $ids = $this->schema->query($this->query[0], $this->query[1] );#PDO::FETCH_NUM);
 
@@ -44,6 +62,11 @@ class ResultSet {
         };
 
         return $this->records;
+    }
+
+    public function single() {
+        $this->all();
+        return $this->records[0];
     }
 
     public function create( $data ) {

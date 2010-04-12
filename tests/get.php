@@ -61,6 +61,23 @@ function test_fetch_all() {
     return true;
 }
 
+function test_fetch_by_search() {
+    $db = new TestSchema();
+
+    $record = $db->resultset('TestTable')
+                 ->search(array( "charfield" => "Test Title"))
+                 ->single();
+
+    if( ! $record instanceof Record ) {
+        return PEAR::raiseError('search()->single() did not return Record');
+    }
+    if( $record->id != 1 ) {
+        return PEAR::raiseError('search() returned wrong ID: expected 1, got ' . $record->id);
+    }
+
+    return true;
+}
+
 # Test bug where ->data() did not load()
 function test_get_data() {
     $db = new TestSchema();
@@ -83,5 +100,6 @@ function test_get_data() {
 Testing::runTests(array(
     "test_fetch_by_id",
     "test_fetch_all",
+    "test_fetch_by_search",
     "test_get_data",
 ));
